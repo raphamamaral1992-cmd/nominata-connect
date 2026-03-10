@@ -35,6 +35,13 @@ const menuItems = [
 export function AdminSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -71,11 +78,9 @@ export function AdminSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <NavLink to="/" className="hover:bg-sidebar-accent/50 text-sidebar-foreground/60" activeClassName="">
-                <LogOut className="mr-2 h-4 w-4" />
-                {!collapsed && <span>Sair</span>}
-              </NavLink>
+            <SidebarMenuButton onClick={handleLogout} className="hover:bg-sidebar-accent/50 text-sidebar-foreground/60 cursor-pointer">
+              <LogOut className="mr-2 h-4 w-4" />
+              {!collapsed && <span>Sair</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

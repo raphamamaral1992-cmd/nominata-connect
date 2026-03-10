@@ -4,6 +4,9 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
+import AdminDashboard from "./pages/AdminDashboard.tsx";
+import NominataDetail from "./pages/NominataDetail.tsx";
+import NominataForm from "./pages/NominataForm.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -16,7 +19,14 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/nominatas" element={<AdminDashboard />} />
+          <Route path="/admin/cidades" element={<AdminDashboard />} />
+          <Route path="/admin/links" element={<AdminDashboard />} />
+          <Route path="/admin/relatorios" element={<AdminDashboard />} />
+          <Route path="/admin/administradores" element={<AdminDashboard />} />
+          <Route path="/admin/nominata/:id" element={<NominataDetail />} />
+          <Route path="/nominata/:token" element={<NominataForm />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

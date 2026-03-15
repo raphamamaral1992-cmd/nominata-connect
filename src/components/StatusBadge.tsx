@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { NominataStatus } from "@/data/cities";
+import type { NominataStatus } from "@/hooks/useCities";
 
 const statusConfig: Record<NominataStatus, { label: string; className: string }> = {
   active: { label: "Ativa", className: "bg-status-active text-status-active-foreground" },

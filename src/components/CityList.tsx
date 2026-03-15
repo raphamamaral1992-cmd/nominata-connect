@@ -2,28 +2,29 @@ import { useState } from "react";
 import { Search, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/StatusBadge";
-import { SP_CITIES, MOCK_NOMINATAS, type NominataStatus } from "@/data/cities";
+import { type CityWithStatus, type NominataStatus } from "@/hooks/useCities";
 import { useNavigate } from "react-router-dom";
 
 interface CityListProps {
+  cities?: CityWithStatus[];
+  isLoading?: boolean;
   filterStatus?: NominataStatus | "all";
 }
 
-export function CityList({ filterStatus = "all" }: CityListProps) {
+export function CityList({ cities, isLoading, filterStatus = "all" }: CityListProps) {
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
-  const citiesWithStatus = SP_CITIES.map((city) => {
-    const nominata = MOCK_NOMINATAS.find((n) => n.cidade === city);
-    return {
-      city,
-      status: (nominata?.status ?? "empty") as NominataStatus,
-      nominataId: nominata?.id,
-    };
-  });
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
-  const filtered = citiesWithStatus.filter((c) => {
-    const matchesSearch = c.city.toLowerCase().includes(search.toLowerCase());
+  const filtered = (cities ?? []).filter((c) => {
+    const matchesSearch = c.name.toLowerCase().includes(search.toLowerCase());
     const matchesFilter = filterStatus === "all" || c.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
@@ -39,15 +40,15 @@ export function CityList({ filterStatus = "all" }: CityListProps) {
           className="pl-10"
         />
       </div>
-      <div className="space-y-1">
+      <div className="space-y-1 max-h-[500px] overflow-y-auto">
         {filtered.map((item) => (
           <button
-            key={item.city}
+            key={item.id}
             onClick={() => item.nominataId && navigate(`/admin/nominata/${item.nominataId}`)}
             className="flex w-full items-center justify-between rounded-lg border bg-card px-4 py-3 text-left transition-colors hover:bg-accent"
           >
             <div className="flex items-center gap-3">
-              <span className="font-medium text-card-foreground">{item.city}</span>
+              <span className="font-medium text-card-foreground">{item.name}</span>
               <StatusBadge status={item.status} />
             </div>
             {item.nominataId && <ChevronRight className="h-4 w-4 text-muted-foreground" />}

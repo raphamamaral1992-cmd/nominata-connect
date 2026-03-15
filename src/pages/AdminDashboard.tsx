@@ -10,17 +10,12 @@ import {
 import { AdminLayout } from "@/components/AdminLayout";
 import { StatsCard } from "@/components/StatsCard";
 import { CityList } from "@/components/CityList";
-import { MOCK_NOMINATAS, SP_CITIES, type NominataStatus } from "@/data/cities";
+import { useCities, useStats, type NominataStatus } from "@/hooks/useCities";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AdminDashboard = () => {
-  const total = MOCK_NOMINATAS.length;
-  const active = MOCK_NOMINATAS.filter((n) => n.status === "active").length;
-  const warning = MOCK_NOMINATAS.filter((n) => n.status === "warning").length;
-  const expired = MOCK_NOMINATAS.filter((n) => n.status === "expired").length;
-  const withNominata = new Set(MOCK_NOMINATAS.map((n) => n.cidade)).size;
-  const withoutNominata = SP_CITIES.length - withNominata;
-
+  const { data: cities, isLoading } = useCities();
+  const stats = useStats(cities);
   const [tab, setTab] = useState<string>("all");
 
   return (
@@ -33,12 +28,12 @@ const AdminDashboard = () => {
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-          <StatsCard title="Total" value={total} icon={ClipboardList} color="primary" />
-          <StatsCard title="Ativas" value={active} icon={CheckCircle2} color="active" />
-          <StatsCard title="Alerta" value={warning} icon={AlertTriangle} color="warning" />
-          <StatsCard title="Inativas" value={expired} icon={XCircle} color="expired" />
-          <StatsCard title="Com Nominata" value={withNominata} icon={FileText} color="primary" />
-          <StatsCard title="Sem Nominata" value={withoutNominata} icon={MapPin} color="empty" />
+          <StatsCard title="Total" value={stats.total} icon={ClipboardList} color="primary" />
+          <StatsCard title="Ativas" value={stats.active} icon={CheckCircle2} color="active" />
+          <StatsCard title="Alerta" value={stats.warning} icon={AlertTriangle} color="warning" />
+          <StatsCard title="Inativas" value={stats.expired} icon={XCircle} color="expired" />
+          <StatsCard title="Com Nominata" value={stats.withNominata} icon={FileText} color="primary" />
+          <StatsCard title="Sem Nominata" value={stats.withoutNominata} icon={MapPin} color="empty" />
         </div>
 
         {/* City List */}
@@ -53,7 +48,7 @@ const AdminDashboard = () => {
               <TabsTrigger value="empty">Sem Nominata</TabsTrigger>
             </TabsList>
             <TabsContent value={tab} className="mt-4">
-              <CityList filterStatus={tab as NominataStatus | "all"} />
+              <CityList cities={cities} isLoading={isLoading} filterStatus={tab as NominataStatus | "all"} />
             </TabsContent>
           </Tabs>
         </div>

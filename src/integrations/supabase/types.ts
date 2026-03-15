@@ -14,7 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cities: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          state: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          state?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          state?: string
+        }
+        Relationships: []
+      }
+      nominatas: {
+        Row: {
+          approved_at: string | null
+          city_id: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          notes: string | null
+          sede_bairro: string | null
+          sede_cep: string | null
+          sede_cidade: string | null
+          sede_endereco: string | null
+          sede_numero: string | null
+          sede_telefone: string | null
+          status: string
+        }
+        Insert: {
+          approved_at?: string | null
+          city_id: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          notes?: string | null
+          sede_bairro?: string | null
+          sede_cep?: string | null
+          sede_cidade?: string | null
+          sede_endereco?: string | null
+          sede_numero?: string | null
+          sede_telefone?: string | null
+          status?: string
+        }
+        Update: {
+          approved_at?: string | null
+          city_id?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          notes?: string | null
+          sede_bairro?: string | null
+          sede_cep?: string | null
+          sede_cidade?: string | null
+          sede_endereco?: string | null
+          sede_numero?: string | null
+          sede_telefone?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nominatas_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: true
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

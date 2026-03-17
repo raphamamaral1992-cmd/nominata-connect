@@ -105,9 +105,6 @@ const NominataForm = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-foreground">Membros ({membros.length})</h2>
-            <Button variant="outline" size="sm" onClick={addMember} className="gap-1.5">
-              <Plus className="h-4 w-4" /> Adicionar Membro
-            </Button>
           </div>
 
           {membros.map((member, idx) => (
@@ -168,12 +165,17 @@ const NominataForm = () => {
           ))}
         </div>
 
-        {/* Actions */}
-        <div className="flex flex-col sm:flex-row gap-3 justify-center pb-8">
-          <Button size="lg" className="gap-2" onClick={handleSubmit}>
-            <FileDown className="h-5 w-5" />
-            Gerar e Enviar Nominata
-          </Button>
+        {/* Bottom Actions - Add member + Submit */}
+        <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t py-4 -mx-4 px-4">
+          <div className="mx-auto max-w-3xl flex flex-col sm:flex-row gap-3 items-center justify-between">
+            <Button variant="outline" size="lg" onClick={addMember} className="gap-2 w-full sm:w-auto">
+              <Plus className="h-5 w-5" /> Adicionar Novo Membro
+            </Button>
+            <Button size="lg" className="gap-2 w-full sm:w-auto" onClick={handleSubmit}>
+              <FileDown className="h-5 w-5" />
+              Gerar e Enviar Nominata
+            </Button>
+          </div>
         </div>
       </div>
     </div>

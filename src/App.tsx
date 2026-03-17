@@ -29,7 +29,7 @@ const App = () => (
             <Route path="/admin/relatorios" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             <Route path="/admin/administradores" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             <Route path="/admin/nominata/:id" element={<ProtectedRoute><NominataDetail /></ProtectedRoute>} />
-            <Route path="/nominata/:token" element={<ProtectedRoute><NominataForm /></ProtectedRoute>} />
+            <Route path="/nominata/:token" element={<NominataForm />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

@@ -7,6 +7,11 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
+import AdminNominatas from "./pages/AdminNominatas.tsx";
+import AdminCidades from "./pages/AdminCidades.tsx";
+import AdminLinks from "./pages/AdminLinks.tsx";
+import AdminRelatorios from "./pages/AdminRelatorios.tsx";
+import AdminAdministradores from "./pages/AdminAdministradores.tsx";
 import NominataDetail from "./pages/NominataDetail.tsx";
 import NominataForm from "./pages/NominataForm.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -23,11 +28,11 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-            <Route path="/admin/nominatas" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-            <Route path="/admin/cidades" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-            <Route path="/admin/links" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-            <Route path="/admin/relatorios" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-            <Route path="/admin/administradores" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/nominatas" element={<ProtectedRoute><AdminNominatas /></ProtectedRoute>} />
+            <Route path="/admin/cidades" element={<ProtectedRoute><AdminCidades /></ProtectedRoute>} />
+            <Route path="/admin/links" element={<ProtectedRoute><AdminLinks /></ProtectedRoute>} />
+            <Route path="/admin/relatorios" element={<ProtectedRoute><AdminRelatorios /></ProtectedRoute>} />
+            <Route path="/admin/administradores" element={<ProtectedRoute><AdminAdministradores /></ProtectedRoute>} />
             <Route path="/admin/nominata/:id" element={<ProtectedRoute><NominataDetail /></ProtectedRoute>} />
             <Route path="/nominata/:token" element={<NominataForm />} />
             <Route path="*" element={<NotFound />} />

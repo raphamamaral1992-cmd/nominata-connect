@@ -1,26 +1,28 @@
 import { AdminLayout } from "@/components/AdminLayout";
-import { Link2, Send, Clock, CheckCircle2 } from "lucide-react";
+import { Link2, Send, Clock, CheckCircle2, XCircle } from "lucide-react";
 import { StatsCard } from "@/components/StatsCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useState } from "react";
-
-interface LinkEnviado {
-  id: string;
-  cidade: string;
-  telefone: string;
-  dataEnvio: string;
-  status: "pendente" | "preenchido" | "expirado";
-}
-
-const mockLinks: LinkEnviado[] = [
-  { id: "lnk-001", cidade: "Campinas", telefone: "(19) 99999-0001", dataEnvio: "2026-03-15", status: "preenchido" },
-  { id: "lnk-002", cidade: "Sorocaba", telefone: "(15) 99888-0001", dataEnvio: "2026-03-10", status: "pendente" },
-  { id: "lnk-003", cidade: "Ribeirão Preto", telefone: "(16) 99777-0001", dataEnvio: "2026-02-20", status: "expirado" },
-  { id: "lnk-004", cidade: "Santos", telefone: "(13) 99666-0001", dataEnvio: "2026-03-18", status: "pendente" },
-  { id: "lnk-005", cidade: "São José dos Campos", telefone: "(12) 99555-0001", dataEnvio: "2026-03-01", status: "preenchido" },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "sonner";
 
 const statusLabel: Record<string, { label: string; className: string }> = {
   pendente: { label: "Pendente", className: "bg-status-warning/15 text-status-warning" },
@@ -30,14 +32,61 @@ const statusLabel: Record<string, { label: string; className: string }> = {
 
 const AdminLinks = () => {
   const [search, setSearch] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedCity, setSelectedCity] = useState("");
+  const [phone, setPhone] = useState("");
+  const queryClient = useQueryClient();
 
-  const filtered = mockLinks.filter((l) =>
-    l.cidade.toLowerCase().includes(search.toLowerCase())
+  const { data: cities = [] } = useQuery({
+    queryKey: ["cities-for-links"],
+    queryFn: async () => {
+      const { data } = await supabase.from("cities").select("id, name").order("name");
+      return data ?? [];
+    },
+  });
+
+  const { data: links = [], isLoading } = useQuery({
+    queryKey: ["nomination-links"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("nomination_links" as any)
+        .select("*, cities!inner(name)")
+        .order("created_at", { ascending: false });
+      return (data ?? []) as any[];
+    },
+  });
+
+  const createLink = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase
+        .from("nomination_links" as any)
+        .insert({ city_id: selectedCity, phone } as any)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["nomination-links"] });
+      setDialogOpen(false);
+      setSelectedCity("");
+      setPhone("");
+      const linkUrl = `${window.location.origin}/nominata/${data.token}`;
+      navigator.clipboard.writeText(linkUrl);
+      toast.success("Link gerado e copiado para a área de transferência!");
+    },
+    onError: () => {
+      toast.error("Erro ao gerar link. Tente novamente.");
+    },
+  });
+
+  const filtered = links.filter((l: any) =>
+    (l.cities?.name ?? "").toLowerCase().includes(search.toLowerCase())
   );
 
-  const total = mockLinks.length;
-  const pendentes = mockLinks.filter((l) => l.status === "pendente").length;
-  const preenchidos = mockLinks.filter((l) => l.status === "preenchido").length;
+  const total = links.length;
+  const pendentes = links.filter((l: any) => l.status === "pendente").length;
+  const preenchidos = links.filter((l: any) => l.status === "preenchido").length;
 
   return (
     <AdminLayout>
@@ -47,7 +96,7 @@ const AdminLinks = () => {
             <h2 className="text-2xl font-bold text-foreground">Links Enviados</h2>
             <p className="text-muted-foreground">Rastreamento dos links de preenchimento</p>
           </div>
-          <Button className="gap-2 self-start">
+          <Button className="gap-2 self-start" onClick={() => setDialogOpen(true)}>
             <Send className="h-4 w-4" /> Gerar Novo Link
           </Button>
         </div>
@@ -73,44 +122,100 @@ const AdminLinks = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-muted-foreground">
-                  <th className="pb-3 font-medium">ID</th>
                   <th className="pb-3 font-medium">Cidade</th>
                   <th className="pb-3 font-medium">Telefone</th>
                   <th className="pb-3 font-medium">Data de Envio</th>
                   <th className="pb-3 font-medium">Status</th>
+                  <th className="pb-3 font-medium">Link</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((link) => {
-                  const st = statusLabel[link.status];
-                  return (
-                    <tr key={link.id} className="border-b last:border-0 hover:bg-accent/40 transition-colors">
-                      <td className="py-3 font-mono text-xs text-muted-foreground">{link.id}</td>
-                      <td className="py-3 font-medium text-card-foreground">{link.cidade}</td>
-                      <td className="py-3 text-muted-foreground">{link.telefone}</td>
-                      <td className="py-3 text-muted-foreground">
-                        {new Date(link.dataEnvio).toLocaleDateString("pt-BR")}
-                      </td>
-                      <td className="py-3">
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${st.className}`}>
-                          {st.label}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-                {filtered.length === 0 && (
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-muted-foreground">Carregando...</td>
+                  </tr>
+                ) : filtered.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="py-8 text-center text-muted-foreground">
                       Nenhum link encontrado.
                     </td>
                   </tr>
+                ) : (
+                  filtered.map((link: any) => {
+                    const st = statusLabel[link.status] ?? statusLabel.pendente;
+                    return (
+                      <tr key={link.id} className="border-b last:border-0 hover:bg-accent/40 transition-colors">
+                        <td className="py-3 font-medium text-card-foreground">{link.cities?.name}</td>
+                        <td className="py-3 text-muted-foreground">{link.phone || "—"}</td>
+                        <td className="py-3 text-muted-foreground">
+                          {new Date(link.created_at).toLocaleDateString("pt-BR")}
+                        </td>
+                        <td className="py-3">
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${st.className}`}>
+                            {st.label}
+                          </span>
+                        </td>
+                        <td className="py-3">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              navigator.clipboard.writeText(`${window.location.origin}/nominata/${link.token}`);
+                              toast.success("Link copiado!");
+                            }}
+                          >
+                            Copiar
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
           </div>
         </div>
       </div>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Gerar Novo Link de Preenchimento</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Cidade</Label>
+              <Select value={selectedCity} onValueChange={setSelectedCity}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a cidade" />
+                </SelectTrigger>
+                <SelectContent>
+                  {cities.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Telefone do Presidente</Label>
+              <Input
+                placeholder="(11) 99999-0000"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
+            <Button
+              onClick={() => createLink.mutate()}
+              disabled={!selectedCity || createLink.isPending}
+            >
+              {createLink.isPending ? "Gerando..." : "Gerar Link"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };

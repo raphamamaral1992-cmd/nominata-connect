@@ -91,6 +91,44 @@ export type Database = {
           },
         ]
       }
+      nomination_links: {
+        Row: {
+          city_id: string
+          created_at: string
+          filled_at: string | null
+          id: string
+          phone: string | null
+          status: string
+          token: string
+        }
+        Insert: {
+          city_id: string
+          created_at?: string
+          filled_at?: string | null
+          id?: string
+          phone?: string | null
+          status?: string
+          token?: string
+        }
+        Update: {
+          city_id?: string
+          created_at?: string
+          filled_at?: string | null
+          id?: string
+          phone?: string | null
+          status?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomination_links_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
